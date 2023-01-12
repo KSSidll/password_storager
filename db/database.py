@@ -31,7 +31,7 @@ class Database:
     def databases(cls) -> list[str]:
         """
         Returns assumed database connections
-        :return: list, names of files that end with '.db' in currently set database folder
+        :return: list, Names of files that end with '.db' in currently set database folder
         """
         return [x[:-3] for x in os.listdir(f"./{cls.__database_folder}/") if x[-3:] == ".db"]
 
@@ -40,7 +40,7 @@ class Database:
         """
         Connects and returns the connection to specified database \n
         Ensures that there is always only 1 connection to each database
-        :param database_name: string, name of the database
+        :param database_name: string, Name of the database
         :return: DatabaseConnection, Connection to the specified database
         """
         if (database_name not in cls.__connections) or cls.__connections[database_name].closed:
@@ -50,6 +50,16 @@ class Database:
         connection.increment_reference_counter()
 
         return connection
+
+    @classmethod
+    def delete(cls, database_name) -> None:
+        """
+        Deletes specified database if it exists
+        :param database_name: string, Name of the database
+        """
+        file = f"./{cls.__database_folder}/{database_name}.db"
+        if os.path.exists(file):
+            os.remove(file)
 
     @classmethod
     def change_database_folder(cls, database_folder) -> None:
