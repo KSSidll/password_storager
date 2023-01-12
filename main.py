@@ -1,7 +1,7 @@
-from db import database
+from db.password_database import PasswordsDatabase
 
-db = database.Database()
+db = PasswordsDatabase()
 db.create_database("test")
-db_test = db.connect("test")
+db.set_connection(database_name="test")
 print(db.databases())
 

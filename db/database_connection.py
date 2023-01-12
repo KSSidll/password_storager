@@ -9,6 +9,7 @@ class DatabaseConnection(Connection):
 
     def __init__(self, database_path: str):
         super().__init__(database_path)
+        self.database_path = database_path
         self.__instances = 0
         self.closed = False
 

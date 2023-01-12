@@ -5,9 +5,9 @@ from db.database_connection import DatabaseConnection
 
 
 class Database:
-    __database_folder = "vault"
+    database_folder = "vault"
     __connections = {}
-    __current_connection: DatabaseConnection | None = None
+    current_connection: DatabaseConnection | None = None
 
     @classmethod
     def create_database(cls, database_name: str) -> bool:
@@ -17,12 +17,12 @@ class Database:
         :param database_name: string, Name of the database
         :return: bool, Whether database was created or not
         """
-        if not os.path.exists(f"./{cls.__database_folder}"):
-            os.mkdir(f"./{cls.__database_folder}")
-        if not os.path.exists(f"./{cls.__database_folder}/{database_name}.db"):
+        if not os.path.exists(f"./{cls.database_folder}"):
+            os.mkdir(f"./{cls.database_folder}")
+        if not os.path.exists(f"./{cls.database_folder}/{database_name}.db"):
             connection = None
             try:
-                connection = sqlite3.connect(f"./{cls.__database_folder}/{database_name}.db")
+                connection = sqlite3.connect(f"./{cls.database_folder}/{database_name}.db")
             except:
                 raise
             finally:
@@ -37,7 +37,7 @@ class Database:
         Returns assumed database connections
         :return: list, Names of files that end with '.db' in currently set database folder
         """
-        return [x[:-3] for x in os.listdir(f"./{cls.__database_folder}/") if x[-3:] == ".db"]
+        return [x[:-3] for x in os.listdir(f"./{cls.database_folder}/") if x[-3:] == ".db"]
 
     @classmethod
     def connect(cls, database_name: str) -> DatabaseConnection:
@@ -48,7 +48,7 @@ class Database:
         :return: DatabaseConnection, Connection to the specified database
         """
         if (database_name not in cls.__connections) or cls.__connections[database_name].closed:
-            cls.__connections[database_name] = DatabaseConnection(f"./{cls.__database_folder}/{database_name}.db")
+            cls.__connections[database_name] = DatabaseConnection(f"./{cls.database_folder}/{database_name}.db")
 
         connection = cls.__connections[database_name]
         connection.increment_reference_counter()
@@ -64,26 +64,26 @@ class Database:
         :param database_name: string, Name of the database
         """
         # close current connection
-        if cls.__current_connection is not None:
-            cls.__current_connection.close()
-            cls.__current_connection = None
+        if cls.current_connection is not None:
+            cls.current_connection.close()
+            cls.current_connection = None
 
         # set new connection
         if connection is not None:
-            cls.__current_connection = connection
+            cls.current_connection = connection
             return
 
         if database_name is not None:
-            cls.__current_connection = cls.connect(database_name)
+            cls.current_connection = cls.connect(database_name)
             return
 
     @classmethod
-    def delete(cls, database_name: str) -> None:
+    def delete_database(cls, database_name: str) -> None:
         """
         Deletes specified database if it exists
         :param database_name: string, Name of the database
         """
-        file = f"./{cls.__database_folder}/{database_name}.db"
+        file = f"./{cls.database_folder}/{database_name}.db"
         if os.path.exists(file):
             os.remove(file)
 
@@ -93,4 +93,4 @@ class Database:
         Changes which folder to use as database storage
         :param database_folder: string, Name of the new folder
         """
-        cls.__database_folder = database_folder
+        cls.database_folder = database_folder
