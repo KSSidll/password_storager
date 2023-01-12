@@ -7,9 +7,10 @@ from db.database_connection import DatabaseConnection
 class Database:
     __database_folder = "vault"
     __connections = {}
+    __current_connection: DatabaseConnection | None = None
 
     @classmethod
-    def create_database(cls, database_name) -> bool:
+    def create_database(cls, database_name: str) -> bool:
         """
         Creates a new database file if it doesn't exist \n
         Passes any sqlite3.connect exceptions to caller
@@ -39,7 +40,7 @@ class Database:
         return [x[:-3] for x in os.listdir(f"./{cls.__database_folder}/") if x[-3:] == ".db"]
 
     @classmethod
-    def connect(cls, database_name) -> DatabaseConnection:
+    def connect(cls, database_name: str) -> DatabaseConnection:
         """
         Connects and returns the connection to specified database \n
         Ensures that there is always only 1 connection to each database
@@ -55,7 +56,29 @@ class Database:
         return connection
 
     @classmethod
-    def delete(cls, database_name) -> None:
+    def set_connection(cls, connection: DatabaseConnection = None, database_name: str = None) -> None:
+        """
+        Sets current connection to the specified database \n
+        If both arguments are passed, DatabaseConnection takes priority
+        :param connection: DatabaseConnection, connection obtained via method connect
+        :param database_name: string, Name of the database
+        """
+        # close current connection
+        if cls.__current_connection is not None:
+            cls.__current_connection.close()
+            cls.__current_connection = None
+
+        # set new connection
+        if connection is not None:
+            cls.__current_connection = connection
+            return
+
+        if database_name is not None:
+            cls.__current_connection = cls.connect(database_name)
+            return
+
+    @classmethod
+    def delete(cls, database_name: str) -> None:
         """
         Deletes specified database if it exists
         :param database_name: string, Name of the database
@@ -65,7 +88,7 @@ class Database:
             os.remove(file)
 
     @classmethod
-    def change_database_folder(cls, database_folder) -> None:
+    def change_database_folder(cls, database_folder: str) -> None:
         """
         Changes which folder to use as database storage
         :param database_folder: string, Name of the new folder

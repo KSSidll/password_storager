@@ -7,7 +7,7 @@ class DatabaseConnection(Connection):
     is open to each individual database file
     """
 
-    def __init__(self, database_path):
+    def __init__(self, database_path: str):
         super().__init__(database_path)
         self.__instances = 0
         self.closed = False
