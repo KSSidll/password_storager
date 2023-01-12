@@ -9,11 +9,12 @@ class Database:
     __connections = {}
 
     @classmethod
-    def create_database(cls, database_name) -> None:
+    def create_database(cls, database_name) -> bool:
         """
         Creates a new database file if it doesn't exist \n
         Passes any sqlite3.connect exceptions to caller
         :param database_name: string, Name of the database
+        :return: bool, Whether database was created or not
         """
         if not os.path.exists(f"./{cls.__database_folder}"):
             os.mkdir(f"./{cls.__database_folder}")
@@ -26,6 +27,8 @@ class Database:
             finally:
                 if connection:
                     connection.close()
+        else:
+            return False
 
     @classmethod
     def databases(cls) -> list[str]:
