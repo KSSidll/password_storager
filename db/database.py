@@ -28,6 +28,7 @@ class Database:
             finally:
                 if connection:
                     connection.close()
+            return True
         else:
             return False
 

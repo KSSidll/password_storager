@@ -28,7 +28,7 @@ class PasswordsDatabase(Database):
 
     @classmethod
     def insert(cls, columns: str = None, values: list[str] = None,
-               data: list[tuple[str, str, str, str]] = None) -> None:
+               data: list[tuple[str | None, str, str | None, str | None]] = None) -> None:
         """
         Inserts data into the passwords table \n
         Argument `data` is prioritized

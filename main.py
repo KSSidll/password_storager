@@ -1,8 +1,12 @@
+import string
+
 from db.password_database import PasswordsDatabase
+from db.password_generator import PasswordGenerator
 
 
 database = PasswordsDatabase()
 user_input = None
+
 while True:
     print("----------------------------")
     print(f"Currently using folder '{database.database_folder}' to search for databases")
@@ -15,8 +19,9 @@ while True:
     print("3. Delete database")
     print("4. Select database")
     print("5. Select database folder")
+    print("6. Generate password")
     if database.current_connection is not None:
-        print(f"6. Show database data")
+        print(f"7. Show database data")
 
     print()
     user_input = input("Next command: ")
@@ -46,6 +51,44 @@ while True:
             if new_folder != "":
                 database.change_database_folder(new_folder)
         case "6":
+            letters = input(f"Include letters? [{string.ascii_letters}] Y/n: ")
+            digits = input(f"Include digits? [{string.digits}] Y/n: ")
+            special_characters = input(f"Include special characters? [{string.punctuation}] Y/n: ")
+            pool = ""
+
+            if letters == "N" or letters == "n":
+                letters = False
+            else:
+                letters = True
+                pool += string.ascii_letters
+
+            if digits == "N" or digits == "n":
+                digits = False
+            else:
+                digits = True
+                pool += string.digits
+
+            if special_characters == "N" or special_characters == "n":
+                special_characters = False
+            else:
+                special_characters = True
+                pool += string.punctuation
+
+            n = int(input("Password length: "))
+
+            print(f"Max entropy = {PasswordGenerator.calculate_max_entropy(n, pool)}")
+
+            min_entropy = float(input("Minimum entropy: "))
+
+            passwd = PasswordGenerator.generate(n, letters, digits, special_characters, min_entropy)
+
+            if passwd is None:
+                print("Couldn't generate a suitable password within 100 000 tries")
+            else:
+                print(passwd)
+                print(f"Password entropy = {PasswordGenerator.calculate_entropy(passwd)}")
+            input("Continue...")
+        case "7":
             if database.current_connection is not None:
                 entries = database.select_all()
                 for itr in range(len(entries)):
