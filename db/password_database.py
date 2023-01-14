@@ -48,9 +48,11 @@ class PasswordsDatabase(Database):
 
         if (columns is not None) and (values is not None):
             if len(values) is not columns.count(","):
-                raise SyntaxError("The number of columns isn't equal to the number of values")
+                raise Exception("The number of columns isn't equal to the number of values")
 
-            cursor.execute(f"INSERT INTO passwords ({columns}) VALUES ('{repr(',').join(values)}')")
+            values = [Encryptor.encrypt(x, cls._password) for x in values]
+
+            cursor.execute(f"INSERT INTO passwords ({columns}) VALUES ('{repr(',').join(map(str, values))}')")
             cls.current_connection.commit()
             return
 
