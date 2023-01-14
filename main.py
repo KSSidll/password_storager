@@ -2,10 +2,11 @@ import string
 
 from db.password_database import PasswordsDatabase
 from db.password_generator import PasswordGenerator
+from encryptor import Encryptor
 
 
 database = PasswordsDatabase()
-user_input = None
+_user_input = None
 
 while True:
     print("----------------------------")
@@ -20,36 +21,51 @@ while True:
     print("4. Select database")
     print("5. Select database folder")
     print("6. Generate password")
+    print("7. Encrypt database file")
+    print("8. Decrypt database file")
     if database.current_connection is not None:
-        print(f"7. Show database data")
+        print(f"9. Show database data")
 
     print()
-    user_input = input("Next command: ")
+    _user_input = input("Next command: ")
 
     print("----------------------------")
 
-    match user_input:
+    match _user_input:
+        # Exit
         case "0":
             break
+        # Show available databases
         case "1":
             print('\n'.join(database.databases()))
+            for encrypted in database.encrypted_databases():
+                print(encrypted + " (Encrypted)")
             input("Continue...")
+        # Create new database
         case "2":
             database_name = input("Database name: ")
-            if database_name != "":
+            if database_name not in database.databases():
                 database.create_database(database_name)
+        # Delete database
         case "3":
+            print("Available databases:")
+            print('\n'.join(database.databases()))
             database_name = input("Database name: ")
-            if database_name != "":
+            if database_name in database.databases():
                 database.delete_database(input("Database name: "))
+        # Select database
         case "4":
+            print("Available databases:")
+            print('\n'.join(database.databases()))
             database_name = input("Database name: ")
-            if database_name != "":
+            if database_name in database.databases():
                 database.set_connection(database_name=database_name)
+        # Select database folder
         case "5":
             new_folder = input("Database folder name: ")
             if new_folder != "":
                 database.change_database_folder(new_folder)
+        # Generate password
         case "6":
             letters = input(f"Include letters? [{string.ascii_letters}] Y/n: ")
             digits = input(f"Include digits? [{string.digits}] Y/n: ")
@@ -88,7 +104,32 @@ while True:
                 print(passwd)
                 print(f"Password entropy = {PasswordGenerator.calculate_entropy(passwd)}")
             input("Continue...")
+        # Encrypt database file
         case "7":
+            print("Available databases:")
+            print('\n'.join(database.databases()))
+            database_name = input("Database name: ")
+            if database.current_connection is not None \
+                    and database.current_connection.database_path == f"./{database.database_folder}/{database_name}.db":
+                database.current_connection.force_close()
+            if database_name in database.databases():
+                passwd = input("Password: ")
+                Encryptor.encrypt_file(f"./{database.database_folder}/{database_name}.db",
+                                       f"./{database.database_folder}/{database_name}.db.enc", passwd)
+                database.delete_database(database_name)
+        # Decrypt database
+        case "8":
+            print("Available databases:")
+            print('\n'.join(database.encrypted_databases()))
+            database_name = input("Database name: ")
+            if database_name in database.encrypted_databases():
+                passwd = input("Password: ")
+                Encryptor.decrypt_file(f"./{database.database_folder}/{database_name}.db.enc",
+                                       f"./{database.database_folder}/{database_name}.db", passwd)
+                database.delete_encrypted_database(database_name)
+
+        # Show database data file
+        case "9":
             if database.current_connection is not None:
                 entries = database.select_all()
                 for itr in range(len(entries)):
@@ -104,8 +145,10 @@ while True:
                 entries_user_input = input()
 
                 match entries_user_input:
+                    # Continue
                     case "1":
                         continue
+                    # Add new
                     case "2":
                         username = input("Username: ")
                         password = input("Password: ")
@@ -122,9 +165,11 @@ while True:
                             description = None
 
                         database.insert(data=[(username, password, domain, description)])
+                    # Delete
                     case "3":
                         entry_id = int(input("ID: ")) - 1
                         database.delete(entries[entry_id].rowid)
+                    # Modify
                     case "4":
                         entry_id = int(input("ID: ")) - 1
 
@@ -163,6 +208,7 @@ while True:
                             description = None
 
                         database.update(entries[entry_id].rowid, username, password, domain, description)
+                    # Show details
                     case "5":
                         entry_id = int(input("ID: ")) - 1
                         print()

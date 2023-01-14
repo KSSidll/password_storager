@@ -4,8 +4,6 @@ from Crypto import Random
 from Crypto.Protocol.KDF import PBKDF2
 from Crypto.Util.Padding import pad, unpad
 
-from db.password_database import PasswordsDatabase
-
 _ENCODING = 'ISO-8859-1'
 
 

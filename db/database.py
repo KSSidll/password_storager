@@ -35,10 +35,18 @@ class Database:
     @classmethod
     def databases(cls) -> list[str]:
         """
-        Returns assumed database connections
+        Returns assumed database files
         :return: list, Names of files that end with '.db' in currently set database folder
         """
         return [x[:-3] for x in os.listdir(f"./{cls.database_folder}/") if x[-3:] == ".db"]
+
+    @classmethod
+    def encrypted_databases(cls) -> list[str]:
+        """
+        Returns assumed encrypted database files
+        :return: list, Names of files that end with '.db.enc' in currently set database folder
+        """
+        return [x[:-7] for x in os.listdir(f"./{cls.database_folder}/") if x[-7:] == ".db.enc"]
 
     @classmethod
     def connect(cls, database_name: str) -> DatabaseConnection:
@@ -85,6 +93,16 @@ class Database:
         :param database_name: string, Name of the database
         """
         file = f"./{cls.database_folder}/{database_name}.db"
+        if os.path.exists(file):
+            os.remove(file)
+
+    @classmethod
+    def delete_encrypted_database(cls, database_name: str) -> None:
+        """
+        Deletes specified database if it exists
+        :param database_name: string, Name of the database
+        """
+        file = f"./{cls.database_folder}/{database_name}.db.enc"
         if os.path.exists(file):
             os.remove(file)
 
