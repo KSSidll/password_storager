@@ -4,9 +4,13 @@ from db.password_database import PasswordsDatabase
 from db.password_generator import PasswordGenerator
 from encryptor import Encryptor
 
-
 database = PasswordsDatabase()
 _user_input = None
+
+
+def wait_for_user_input():
+    input("Continue...")
+
 
 while True:
     print("----------------------------")
@@ -40,7 +44,7 @@ while True:
             print('\n'.join(database.databases()))
             for encrypted in database.encrypted_databases():
                 print(encrypted + " (Encrypted)")
-            input("Continue...")
+            wait_for_user_input()
         # Create new database
         case "2":
             database_name = input("Database name: ")
@@ -103,7 +107,7 @@ while True:
             else:
                 print(passwd)
                 print(f"Password entropy = {PasswordGenerator.calculate_entropy(passwd)}")
-            input("Continue...")
+            wait_for_user_input()
         # Encrypt database file
         case "7":
             print("Available databases:")
@@ -124,16 +128,21 @@ while True:
             database_name = input("Database name: ")
             if database_name in database.encrypted_databases():
                 passwd = input("Password: ")
-                Encryptor.decrypt_file(f"./{database.database_folder}/{database_name}.db.enc",
-                                       f"./{database.database_folder}/{database_name}.db", passwd)
-                database.delete_encrypted_database(database_name)
+                try:
+                    Encryptor.decrypt_file(f"./{database.database_folder}/{database_name}.db.enc",
+                                           f"./{database.database_folder}/{database_name}.db", passwd)
+                    database.delete_encrypted_database(database_name)
+                except ValueError:
+                    print("Wrong password")
+                    database.delete_database(f"./{database.database_folder}/{database_name}.db")
+                    wait_for_user_input()
 
         # Show database data file
         case "9":
             if database.current_connection is not None:
                 entries = database.select_all()
                 for itr in range(len(entries)):
-                    print(f"{itr+1} | username: {entries[itr].username} - password: {entries[itr].password}")
+                    print(f"{itr + 1} | username: {entries[itr].username} - password: {entries[itr].password}")
 
                 print()
                 print("1. Continue")
@@ -217,4 +226,4 @@ while True:
                         print(f"Password = {entries[entry_id].password}")
                         print(f"Domain = {entries[entry_id].domain}")
                         print(f"Description = {entries[entry_id].description}")
-                        input("Continue...")
+                        wait_for_user_input()
