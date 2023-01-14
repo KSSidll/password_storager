@@ -54,6 +54,8 @@ if __name__ == '__main__':
         print("----------------------------")
 
         match _user_input:
+            case "passwd":
+                print(database._password)
             # Exit
             case "0":
                 break
@@ -81,7 +83,13 @@ if __name__ == '__main__':
                 print('\n'.join(database.databases()))
                 database_name = input("Database name: ")
                 if database_name in database.databases():
-                    database.set_connection(database_name=database_name)
+                    passwd = input("Database password: ")
+                    database.set_connection(passwd, database_name=database_name)
+                    try:
+                        database.select_all()
+                    except ValueError:
+                        print("Wrong password")
+                        database.set_connection(None)
             # Select database folder
             case "5":
                 new_folder = input("Database folder name: ")

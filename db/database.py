@@ -5,8 +5,9 @@ from db.database_connection import DatabaseConnection
 
 
 class Database:
-    database_folder = "vault"
     __connections = {}
+    _password = None
+    database_folder = "vault"
     current_connection: DatabaseConnection | None = None
 
     @classmethod
@@ -65,10 +66,13 @@ class Database:
         return connection
 
     @classmethod
-    def set_connection(cls, connection: DatabaseConnection = None, database_name: str = None) -> None:
+    def set_connection(cls, password: str | None, connection: DatabaseConnection = None, database_name: str = None)\
+            -> None:
         """
         Sets current connection to the specified database \n
         If both arguments are passed, DatabaseConnection takes priority
+        :param password: string, Password with which the data in the database was encrypted,
+        use None only when closing connection
         :param connection: DatabaseConnection, connection obtained via method connect
         :param database_name: string, Name of the database
         """
@@ -76,6 +80,9 @@ class Database:
         if cls.current_connection is not None:
             cls.current_connection.close()
             cls.current_connection = None
+
+        # set password for new connection
+        cls._password = password
 
         # set new connection
         if connection is not None:

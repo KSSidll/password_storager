@@ -23,6 +23,16 @@ class Encryptor:
         return base64.b64encode(iv + cipher.encrypt(raw))
 
     @staticmethod
+    def encrypt_noneable(data, passwd, salt="test_salt___") -> bytes | None:
+        """
+        Encrypts data but returns None if it's None
+        """
+        if data is None:
+            return None
+        else:
+            return Encryptor.encrypt(data, passwd, salt)
+
+    @staticmethod
     def encrypt_raw(raw, passwd, salt="test_salt___") -> bytes:
         private_key = Encryptor.__get_private_key(passwd, salt.encode(_ENCODING, errors='replace'))
         raw = pad(raw, AES.block_size)
@@ -31,12 +41,24 @@ class Encryptor:
         return base64.b64encode(iv + cipher.encrypt(raw))
 
     @staticmethod
-    def decrypt(data, passwd, salt="test_salt___") -> str:
+    def decrypt(data: bytes, passwd, salt="test_salt___") -> str:
         private_key = Encryptor.__get_private_key(passwd, salt.encode(_ENCODING, errors='replace'))
         data = base64.b64decode(data)
         iv = data[:16]
         cipher = AES.new(private_key, AES.MODE_CBC, iv)
         return bytes.decode(unpad(cipher.decrypt(data[16:]), AES.block_size))
+
+    @staticmethod
+    def decrypt_any(data, passwd, salt="test_salt___") -> str:
+        """
+        Decrypts data of type bytes, but returns data if it isn't of type bytes instead of raising TypeError
+        """
+        try:
+            return Encryptor.decrypt(data, passwd, salt)
+        except ValueError:
+            raise
+        except:
+            return data
 
     @staticmethod
     def decrypt_raw(raw, passwd, salt="test_salt___") -> bytes:
